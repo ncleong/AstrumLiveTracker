@@ -247,14 +247,21 @@
                      // Update UI
                      var cpName = getClosestCPName();
                      if(cpName=="Katherine" || cpName=="Dunmarra"){
-                        changeNewestMarkerInfoWindow(document.getElementById("ins-1").innerHTML);
+                        let el = document.getElementById("ins-1") || document.getElementById("ins");
+                        if(el) changeNewestMarkerInfoWindow(el.innerHTML);
                      }
-                     else if(cpName=="Tennant Creek" || cpName=="Barrow Creek")
-                        changeNewestMarkerInfoWindow(document.getElementById("ins-2").innerHTML);
-                     else if(cpName=="Alice Springs" || cpName=="Erldunda")
-                        changeNewestMarkerInfoWindow(document.getElementById("ins-3").innerHTML);
-                     else if(cpName=="Coober Pedy" || cpName=="Glendambo")
-                        changeNewestMarkerInfoWindow(document.getElementById("ins-4").innerHTML);
+                     else if(cpName=="Tennant Creek" || cpName=="Barrow Creek"){
+                        let el = document.getElementById("ins-2") || document.getElementById("ins");
+                        if(el) changeNewestMarkerInfoWindow(el.innerHTML);
+                     }
+                     else if(cpName=="Alice Springs" || cpName=="Erldunda"){
+                        let el = document.getElementById("ins-3") || document.getElementById("ins");
+                        if(el) changeNewestMarkerInfoWindow(el.innerHTML);
+                     }
+                     else if(cpName=="Coober Pedy" || cpName=="Glendambo"){
+                        let el = document.getElementById("ins-4") || document.getElementById("ins");
+                        if(el) changeNewestMarkerInfoWindow(el.innerHTML);
+                     }
                   }
                }
             }
@@ -601,7 +608,7 @@
    
    function getClosestCPName(){
       const curLat=traceMarkers[traceMarkers.length-1].getPosition().lat();
-      if(curLat>startPos.lat)alert("Too North!");
+      if(curLat>startPos.lat){ console.log("Too North!"); return "Start"; }
       else if(curLat <= startPos.lat && curLat>katherinePos.lat){return "Katherine";}
       else if(curLat <= katherinePos.lat && curLat>dunmarraPos.lat){return "Dunmarra";}
       else if(curLat <= dunmarraPos.lat && curLat>tennantCreekPos.lat){return "Tennant Creek";}
@@ -611,9 +618,9 @@
       else if(curLat <= kulgeraPos.lat && curLat>cooberPedyPos.lat){return "Coober Pedy";}
       else if(curLat <= cooberPedyPos.lat && curLat>glendamboPos.lat){return "Glendambo";}
       else if(curLat <= glendamboPos.lat && curLat>portAugustaPos.lat){return "Port Augusta";}
+      else if(curLat <= portAugustaPos.lat && curLat>endPos.lat){return "Adelaide";}
       else if(curLat <= endPos.lat){return "Adelaide";}
-      else
-         alert("Too South!");
+      else { console.log("Too South!"); return "Adelaide"; }
    }
 
    function getClosestCPPos(){
