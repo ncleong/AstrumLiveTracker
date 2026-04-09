@@ -251,10 +251,10 @@
                   
                   if(i==str.length-1)astrumMarker.setPosition(str[i]);
                   
-                  if(!isNaN(seconds) && seconds % freq == 0){
+                  if(!isNaN(seconds)){
                      addTraceMarker(str[i], timeStr[i]);
                      if(traceMarkers.length > 1) {
-                        traceMarkers[traceMarkers.length-1].setMap(null);
+                        traceMarkers[traceMarkers.length-2].setMap(null);
                      }
                      // Update UI
                      var cpName = getClosestCPName();
@@ -682,13 +682,13 @@
             return sth;
             break;
          case("Port Augusta"): 
-            return portAugustaPos; 
+            return new google.maps.LatLng(portAugustaPos.lat, portAugustaPos.lng); 
             break;
          case("Adelaide"): 
-            return endPos; 
+            return new google.maps.LatLng(endPos.lat, endPos.lng); 
             break;
          default:
-            return startPos;
+            return new google.maps.LatLng(startPos.lat, startPos.lng);
       }
    }
 
