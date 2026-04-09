@@ -223,7 +223,7 @@
 
    //Gets position by fetching github .txt file
    async function getAstrumPos(){
-      getText("./location.txt?t=" + new Date().getTime()).then(
+      return getText("./location.txt?t=" + new Date().getTime()).then(
          function(value){
             const str=processTxtPara(value);
             const timeStr=processTxtParaTime(value);
@@ -517,15 +517,16 @@
                   setSpeed=value;
                }
             )
-            while(traceMarkers.length<1){await sleep(1000);}
+            while(traceMarkers.length<1){await sleep(100);}
             hideTrace();
+            
+            // Re-map the very last trace marker and compute final distance values
             var counter=allTracePos.length-1;
-            while(allTracePos[counter].length+allTraceTime[counter]<33){
-               counter--;
-            }
-            console.log("processed= "+allTracePos[counter] + " time= "+allTraceTime[counter]);
             addTraceMarker(allTracePos[counter], allTraceTime[counter]);
-            traceMarkers[traceMarkers.length-2].setMap(null);
+            
+            if(traceMarkers.length >= 2) {
+               traceMarkers[traceMarkers.length-2].setMap(null);
+            }
             doDist2(traceMarkers[traceMarkers.length-1].getPosition(), getClosestCPPos());
             //await doDist(traceMarkers[traceMarkers.length-1].getPosition(), getClosestCPPos());
             //animate(20);//refreshes each animated frame per 20 ms
