@@ -8,7 +8,6 @@
     <!--<meta name="google-signin-client_id" content="866896161838-06ntn1butf2aanvto43332mc81ojhvs6.apps.googleusercontent.com">-->
     <script src="https://apis.google.com/js/api:client.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-    
     <script src="https://maps.googleapis.com/maps/api/js?key=__MAPS_API_KEY__&callback=initMap&libraries=&v=weekly" defer></script>
     <!--<script src="https://apis.google.com/js/platform.js" async defer></script>-->
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
@@ -224,40 +223,51 @@
 
    //Gets position by fetching github .txt file
    async function getAstrumPos(){
-      //getText("./location.txt").then(
-      getText("./location.txt").then(
+      getText("./location.txt?t=" + new Date().getTime()).then(
          function(value){
             const str=processTxtPara(value);
             const timeStr=processTxtParaTime(value);
+            // Both arrays are now strictly aligned by line index
             for(let i=0;i<str.length;++i){
                if(str[i] && timeStr[i]){
                   allTracePos.push(str[i]);
                   allTraceTime.push(timeStr[i]);
+                  
+                  // Safe parsing of time string seconds
                   var sth=timeStr[i].split(":");
-                  sth=sth[2];
-                  if(i==str.length-1)astrumMarker.setPosition(str[i], timeStr[i]);
-                  if(Number(sth%freq==0)){
+                  var seconds = (sth.length >= 3) ? parseInt(sth[2]) : NaN;
+                  
+                  if(i==str.length-1)astrumMarker.setPosition(str[i]);
+                  
+                  if(!isNaN(seconds) && seconds % freq == 0){
                      addTraceMarker(str[i], timeStr[i]);
-                     traceMarkers[traceMarkers.length-1].setMap(null);
-                     if(getClosestCPName()=="Katherine" || getClosestCPName()=="Dunmarra"){
+                     if(traceMarkers.length > 1) {
+                        traceMarkers[traceMarkers.length-1].setMap(null);
+                     }
+                     // Update UI
+                     var cpName = getClosestCPName();
+                     if(cpName=="Katherine" || cpName=="Dunmarra"){
                         changeNewestMarkerInfoWindow(document.getElementById("ins-1").innerHTML);
                      }
-                     else if(getClosestCPName()=="Tennant Creek" || getClosestCPName()=="Barrow Creek")
+                     else if(cpName=="Tennant Creek" || cpName=="Barrow Creek")
                         changeNewestMarkerInfoWindow(document.getElementById("ins-2").innerHTML);
+                     else if(cpName=="Alice Springs" || cpName=="Erldunda")
+                        changeNewestMarkerInfoWindow(document.getElementById("ins-3").innerHTML);
+                     else if(cpName=="Coober Pedy" || cpName=="Glendambo")
+                        changeNewestMarkerInfoWindow(document.getElementById("ins-4").innerHTML);
                   }
                }
             }
-            astrumMarker.setPosition(traceMarkers[traceMarkers.length-1]);
+            if(traceMarkers.length > 0) {
+               astrumMarker.setPosition(traceMarkers[traceMarkers.length-1].getPosition());
+            }
             return("DONE");
          },
          function(error){
+            console.error(error);
             return error;
-            alert("sth wrong w txt file!~");
-
          }
       );
-      return("DONE");
-      //str=str.split(",");
    }
 
    //Creates the initial control stops markers
@@ -717,35 +727,42 @@
    }
 
    function processTxtPara(string){
-      string=string.split("\n");
+      let parts=string.split("\n");
       let sth=[];
-      for(let i=0;i<string.length;++i){
-         let str=processTxtRow(string[i]);
-         if(str!="")sth.push(str);
+      for(let i=0;i<parts.length;++i){
+         let markerPos = processTxtRow(parts[i]);
+         sth.push(markerPos); // keep null if invalid to maintain alignment
       }
       return sth;
    }
-
    function processTxtRow(string){
-      string=string.split(",");
-      const sth=new google.maps.LatLng(string[0],string[1]);
+      if(!string || string.trim() === "") return null;
+      let parts=string.split(",");
+      if(parts.length < 3) return null; // Corrupted row, skip processing
+      
+      // Usually Lat, Lng are the second to last and third to last elements
+      // For instance: Lat, Lng, DateTime
+      let lat = parseFloat(parts[parts.length-3].trim());
+      let lng = parseFloat(parts[parts.length-2].trim());
+      
+      if(isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90) return null;
+      return new google.maps.LatLng(lat,lng);
+   }
+   function processTxtParaTime(string){
+      let parts=string.split("\n");
+      let sth=[];
+      for(let i=0;i<parts.length;++i){
+         let timeRes = processTxtRowTime(parts[i]);
+         sth.push(timeRes); // keep null if invalid to maintain alignment
+      }
       return sth;
    }
-
-   function processTxtParaTime(string){
-      string=string.split("\n");
-      for(let i=0;i<string.length;++i){
-         const sth= string[i].split(",");
-         string[i]=sth[2];
-      }
-      return string;
-   }
+   //processes the str array
    function processTxtRowTime(string){
-      for(let i=0;i<string.length;++i){
-         const sth= string[i].split(",");
-         string[i]=sth[2];
-      }
-      return string;
+      if(!string || string.trim() === "") return null;
+      let parts=string.split(",");
+      if(parts.length < 3) return null; // Corrupted row
+      return parts[parts.length-1].trim(); // always the last split parameter
    }
    function getFullTimeString(){
       return getDateInString()+"-"+getTimeInString();
