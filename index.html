@@ -471,12 +471,12 @@
    function processDist(str){
       let str2="";
       for(let i=0;i<str.length;++i){
-         if(48<=str.codePointAt(i)&& str.codePointAt(i)<=57)str2+=str[i];
-         else 
-            break;
+         let code = str.codePointAt(i);
+         if((code >= 48 && code <= 57) || str[i] === '.') str2+=str[i];
+         else if (str2.length > 0) break;
       }
-      str2+=" km";
-      return str2;
+      let num = parseFloat(str2);
+      return (isNaN(num) ? "0.00" : num.toFixed(2)) + " km";
    }
    //helper function to make the icons in same size
    function unifyInitIcon(URL){
@@ -561,15 +561,15 @@
       var dist = haversine_distance(mk1, mk2);
       mk2 = getClosestCPPos();
       data = "Next control stop: "+ getClosestCPName() + '\n';
-      data+=  "Distance left: " + haversine_distance(mk1, mk2) + '\n';
-      data += "time to next control stop: "+ dist/setSpeed*60+ " minutes"+'\n';
+      data+=  "Distance left: " + haversine_distance(mk1, mk2).toFixed(2) + " miles" + '\n';
+      data += "time to next control stop: "+ (dist/setSpeed*60).toFixed(2) + " minutes"+'\n';
       const d = new Date();
       var h=d.getHours();
       var m = d.getMinutes() + Math.floor(dist/setSpeed*60);
       if(m>60){h+=Math.floor(m/60);m%=60;}
       data += "ETA to next control stop: "+ month[d.getMonth()] +d.getDate() + " " +h+":"+m+'\n';
       var sth = new google.maps.LatLng(startPos.lat, startPos.lng);
-      data += "Distance from Darwin: " + haversine_distance(mk1, sth) + '\n';
+      data += "Distance from Darwin: " + haversine_distance(mk1, sth).toFixed(2) + " miles" + '\n';
       data += "Last updated: "+traceMarkers[traceMarkers.length-1].getLabel();
    }
 
@@ -594,7 +594,7 @@
          else{
             var dist=processDist(response.rows[0].elements[0].distance.text);
             data=getClosestCPName() + ", Distance left: "+dist +
-               ", ETA: "+ getNumberFromString(dist)/80 + " hours";
+               ", ETA: "+ (getNumberFromString(dist)/80).toFixed(2) + " hours";
             return data;
          } 
       });
@@ -620,7 +620,7 @@
          else{
             var dist=processDist(response.rows[0].elements[0].distance.text);
             data=getClosestCPName() + ", Distance left: "+dist +
-               ", ETA: "+ getNumberFromString(dist)/80 + " hours";
+               ", ETA: "+ (getNumberFromString(dist)/80).toFixed(2) + " hours";
             changeNewestMarkerInfoWindow(data);
             for(var i=0; i<origins.length;++i){
                var results=response.rows[i].elements;
@@ -865,7 +865,7 @@
          infowindow.setPosition(pos);
          var sthh = new google.maps.LatLng(pos.lat, pos.lng);
          var str= "Your location is here;"+'\n';
-         str+="Dist from blue= "+haversine_distance(sthh, allTracePos[allTracePos.length-1])+'\n';
+         str+="Dist from blue= "+haversine_distance(sthh, allTracePos[allTracePos.length-1]).toFixed(2) + " miles" + '\n';
          console.log("type = "+typeof sthh+" "+typeof allTracePos[allTracePos.length-1]);
          str+="Last updated: "+allTraceTime[allTraceTime.length-1];
          infowindow.setContent(str);
